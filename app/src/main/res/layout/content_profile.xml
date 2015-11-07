@@ -68,4 +68,5 @@
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true" />
 
+    <include layout="@layout/location" />
 </RelativeLayout>
