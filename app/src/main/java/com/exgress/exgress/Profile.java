@@ -50,13 +50,13 @@ public class Profile extends AppCompatActivity
 
     BandInfo[] pairedBands;
     BandClient bandClient;
-    TextView BandVersion;
+    /*TextView BandVersion;
     TextView BandHR;
     TextView BandTemp;
     TextView BandFVersion;
     TextView BandAccel;
     TextView BandGyro;
-    TextView BandUV;
+    TextView BandUV;*/
     private GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,16 +151,16 @@ public class Profile extends AppCompatActivity
                     final String fwVersion = pendingVersion.await();
                     pendingVersion = bandClient.getHardwareVersion();
                     final String hwVersion = pendingVersion.await();
-                    BandVersion.post(new Runnable() {
+                    /*BandVersion.post(new Runnable() {
                         @Override
-                        public void run() { BandVersion.setText(hwVersion);
+                        public void run() { //BandVersion.setText(hwVersion);
                         }
                     });
                     BandFVersion.post(new Runnable() {
                         @Override
-                        public void run() { BandFVersion.setText(fwVersion);
+                        public void run() { //BandFVersion.setText(fwVersion);
                         }
-                    });
+                    });*/
                 } catch (InterruptedException ex) {
                     // catch
                 } catch(BandException ex) {
@@ -170,12 +170,12 @@ public class Profile extends AppCompatActivity
                 BandHeartRateEventListener heartRateListener = new BandHeartRateEventListener() {
                     public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
                         final String HR = String.valueOf(bandHeartRateEvent.getHeartRate());
-                        BandHR.post(new Runnable() {
+                        /*BandHR.post(new Runnable() {
                             @Override
                             public void run() {
-                                BandHR.setText(HR);
+                                //BandHR.setText(HR);
                             }
-                        });
+                        });*/
                     }
                 };
 
@@ -184,12 +184,12 @@ public class Profile extends AppCompatActivity
                     @Override
                     public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
                         final String TempF = String.valueOf(bandSkinTemperatureEvent.getTemperature());
-                        BandTemp.post(new Runnable() {
+                       /* BandTemp.post(new Runnable() {
                             @Override
                             public void run() {
-                                BandTemp.setText(TempF);
+                                //BandTemp.setText(TempF);
                             }
-                        });
+                        });*/
                     }
                 };
 
@@ -199,12 +199,12 @@ public class Profile extends AppCompatActivity
                         final String AccX = String.format("%.2f", bandAccelerometerEvent.getAccelerationX());
                         final String AccY = String.format("%.2f", bandAccelerometerEvent.getAccelerationY());
                         final String AccZ = String.format("%.2f", bandAccelerometerEvent.getAccelerationZ());
-                        BandAccel.post(new Runnable() {
+                       /* BandAccel.post(new Runnable() {
                             @Override
                             public void run() {
-                                BandAccel.setText("X " + AccX + ", Y " + AccY + ", Z " + AccZ);
+                                //BandAccel.setText("X " + AccX + ", Y " + AccY + ", Z " + AccZ);
                             }
-                        });
+                        });*/
                     }
                 };
 
@@ -214,12 +214,12 @@ public class Profile extends AppCompatActivity
                         final String GyrX = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityX());
                         final String GyrY = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityY());
                         final String GyrZ = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityZ());
-                        BandGyro.post(new Runnable() {
+                       /* BandGyro.post(new Runnable() {
                             @Override
                             public void run() {
-                                BandGyro.setText("X " + GyrX + ", Y " + GyrY + ", Z " + GyrZ);
+                               // BandGyro.setText("X " + GyrX + ", Y " + GyrY + ", Z " + GyrZ);
                             }
-                        });
+                        });*/
                     }
                 };
 
@@ -227,12 +227,12 @@ public class Profile extends AppCompatActivity
                     @Override
                     public void onBandUVChanged(BandUVEvent bandUVEvent) {
                         final String UVRead = String.valueOf(bandUVEvent.getUVIndexLevel());
-                        BandUV.post(new Runnable() {
+                       /* BandUV.post(new Runnable() {
                             @Override
                             public void run() {
-                                BandUV.setText(UVRead);
+                               // BandUV.setText(UVRead);
                             }
-                        });
+                        });*/
                     }
                 };
 
@@ -265,7 +265,7 @@ public class Profile extends AppCompatActivity
                 } catch(BandException ex) {
                 }
             } else {
-                BandVersion.setText("Connection failed.. ");
+                //BandVersion.setText("Connection failed.. ");
             }
         }
         catch(InterruptedException ex) {

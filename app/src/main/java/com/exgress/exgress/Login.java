@@ -25,6 +25,9 @@ public class Login extends AppCompatActivity {
         try {
             URL url = new URL("");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type","application/json");
+            
             in = new BufferedInputStream(urlConnection.getInputStream());
             } catch (Exception e ) {
             System.out.println(e.getMessage());
