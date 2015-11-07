@@ -17,8 +17,12 @@ public class Login extends AppCompatActivity {
     }
 
     public void loginpro(View v) {
-        Intent intent = new Intent(this, Profile.class);
-        startActivity(intent);
+        Intent intent1 = new Intent(this, Profile.class);
+        startActivity(intent1);
+    }
+    public void registerpro(View v) {
+        Intent intent2 = new Intent(this, Register.class);
+        startActivity(intent2);
     }
 }
 
