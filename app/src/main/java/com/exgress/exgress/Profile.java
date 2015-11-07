@@ -1,9 +1,6 @@
 package com.exgress.exgress;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -22,15 +19,7 @@ import com.microsoft.band.ConnectionState;
 import com.microsoft.band.sensors.BandHeartRateEvent;
 import com.microsoft.band.sensors.BandHeartRateEventListener;
 import com.microsoft.band.sensors.HeartRateConsentListener;
-import android.app.Activity;
-import android.os.AsyncTask;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.TextView;
-import com.microsoft.band.ConnectionState;
-import com.microsoft.band.BandInfo;
-import com.microsoft.band.BandException;
-import com.microsoft.band.BandPendingResult;
 import com.microsoft.band.UserConsent;
 import com.microsoft.band.sensors.BandAccelerometerEventListener;
 import com.microsoft.band.sensors.BandHeartRateEvent;
@@ -45,22 +34,9 @@ import com.microsoft.band.sensors.BandGyroscopeEventListener;
 import com.microsoft.band.sensors.BandUVEvent;
 import com.microsoft.band.sensors.BandUVEventListener;
 import com.microsoft.band.sensors.SampleRate;
-import android.os.Parcel;
-import android.os.Parcelable;
-import java.util.Random;
-import android.provider.Settings;
-import android.content.Intent;
-import android.os.Bundle;
-import android.location.LocationListener;
-import android.location.Location;
-import android.content.Context;
-import android.location.LocationManager;
-
-
-
 
 public class Profile extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener  {
 
     BandInfo[] pairedBands;
     BandClient bandClient;
@@ -78,28 +54,17 @@ public class Profile extends AppCompatActivity
         setContentView(R.layout.profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+
         pairedBands = BandClientManager.getInstance().getPairedBands();
         bandClient = BandClientManager.getInstance().create(getApplicationContext(), pairedBands[0]);
-
         BandVersion = (TextView) findViewById(R.id.BandVer);
         BandHR = (TextView) findViewById(R.id.BandHR);
         BandTemp = (TextView) findViewById(R.id.BandTemp);
@@ -107,13 +72,9 @@ public class Profile extends AppCompatActivity
         BandAccel = (TextView) findViewById(R.id.BandAccel);
         BandGyro = (TextView) findViewById(R.id.BandGyro);
         BandUV = (TextView) findViewById(R.id.BandUV);
-
         // Note: the BandClient.Connect method must be called from a background thread. An exception
         // will be thrown if called from the UI thread.
-
         bandConsent(); // new SDK requires consent to read from HR sensor
-
-
     }
 
     private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
@@ -273,29 +234,16 @@ public class Profile extends AppCompatActivity
                 try {
                     bandClient.getSensorManager().registerSkinTemperatureEventListener(skinTemperatureEventListener);
                 } catch(BandException ex) {
-                    // catch
                 }
-
-//                try {
-//                    // Create a bitmap for the Me Tile image, must be 310x102 pixels
-//                    Bitmap image = Bitmap.createBitmap(310, 102, Bitmap.Config.ARGB_4444);
-//                    image.eraseColor(Color.DKGRAY);
-//                    //Bitmap meTileBitmap = Bitmap.createBitmap(310, 102, null);
-//                    bandClient.getPersonalizationManager().setMeTileImage(image).await();
-//                } catch (InterruptedException e) {
-//                    // catch
-//                } catch (BandException e) {
-//                    // catch
-//                }
             } else {
                 BandVersion.setText("Connection failed.. ");
             }
         }
         catch(InterruptedException ex) {
-            // catch
+
         }
         catch(BandException ex) {
-            // catch
+
         }
     }
 

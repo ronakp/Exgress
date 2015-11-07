@@ -1,7 +1,6 @@
 package com.exgress.exgress;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -13,7 +12,7 @@ import java.net.URL;
 
 public class Login extends AppCompatActivity {
 
-
+    InputStream in = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,12 +21,12 @@ public class Login extends AppCompatActivity {
     }
 
     public void loginpro(View v) {
-        InputStream in = null;
+
         try {
             URL url = new URL("");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             in = new BufferedInputStream(urlConnection.getInputStream());
-        } catch (Exception e ) {
+            } catch (Exception e ) {
             System.out.println(e.getMessage());
         }
         Intent intent1 = new Intent(this, Profile.class);
