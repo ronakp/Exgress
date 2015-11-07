@@ -1,5 +1,6 @@
 package com.exgress.exgress;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -9,6 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.microsoft.band.BandClient;
 import com.microsoft.band.BandClientManager;
 import com.microsoft.band.BandException;
@@ -20,6 +24,8 @@ import com.microsoft.band.sensors.BandHeartRateEvent;
 import com.microsoft.band.sensors.BandHeartRateEventListener;
 import com.microsoft.band.sensors.HeartRateConsentListener;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.microsoft.band.UserConsent;
 import com.microsoft.band.sensors.BandAccelerometerEventListener;
 import com.microsoft.band.sensors.BandHeartRateEvent;
@@ -34,9 +40,13 @@ import com.microsoft.band.sensors.BandGyroscopeEventListener;
 import com.microsoft.band.sensors.BandUVEvent;
 import com.microsoft.band.sensors.BandUVEventListener;
 import com.microsoft.band.sensors.SampleRate;
+import com.google.android.gms.common.ConnectionResult;
+
+
 
 public class Profile extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener  {
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener  {
 
     BandInfo[] pairedBands;
     BandClient bandClient;
@@ -47,7 +57,7 @@ public class Profile extends AppCompatActivity
     TextView BandAccel;
     TextView BandGyro;
     TextView BandUV;
-
+    private GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,21 +72,40 @@ public class Profile extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
 
         pairedBands = BandClientManager.getInstance().getPairedBands();
         bandClient = BandClientManager.getInstance().create(getApplicationContext(), pairedBands[0]);
-        BandVersion = (TextView) findViewById(R.id.BandVer);
+        /*BandVersion = (TextView) findViewById(R.id.BandVer);
         BandHR = (TextView) findViewById(R.id.BandHR);
         BandTemp = (TextView) findViewById(R.id.BandTemp);
         BandFVersion = (TextView) findViewById(R.id.BandFVer);
         BandAccel = (TextView) findViewById(R.id.BandAccel);
         BandGyro = (TextView) findViewById(R.id.BandGyro);
-        BandUV = (TextView) findViewById(R.id.BandUV);
+        BandUV = (TextView) findViewById(R.id.BandUV);*/
         // Note: the BandClient.Connect method must be called from a background thread. An exception
         // will be thrown if called from the UI thread.
         bandConsent(); // new SDK requires consent to read from HR sensor
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
     private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
         @Override
         public void userAccepted(boolean b) {
@@ -287,9 +316,9 @@ public class Profile extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camara) {
+        if (id == R.id.nav_home) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_world) {
 
         } else if (id == R.id.nav_slideshow) {
 
@@ -304,5 +333,29 @@ public class Profile extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+    private void handleNewLocation(Location location) {
+        Toast.makeText(Profile.this, location.toString(), Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public void onConnected(Bundle bundle) {
+        Toast.makeText(Profile.this, "Location services connected.", Toast.LENGTH_SHORT).show();
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if (location == null) {
+
+        }
+        else {
+            handleNewLocation(location);
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Toast.makeText(Profile.this, "Location services suspended. Please reconnect.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 }
