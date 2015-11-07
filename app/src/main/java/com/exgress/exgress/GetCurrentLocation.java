@@ -86,7 +86,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener{
 
             Log.v(TAG, flag.toString());
 
-            editLocation.setText("Please!! move your device to" +
+            editLocation.setText("Please move your device to" +
                     " see the changes in coordinates." + "\nWait..");
 
             pb.setVisibility(View.VISIBLE);
