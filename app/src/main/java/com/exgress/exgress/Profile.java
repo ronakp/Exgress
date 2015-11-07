@@ -45,11 +45,32 @@ import com.microsoft.band.sensors.BandGyroscopeEventListener;
 import com.microsoft.band.sensors.BandUVEvent;
 import com.microsoft.band.sensors.BandUVEventListener;
 import com.microsoft.band.sensors.SampleRate;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+
 
 
 
 public class Profile extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener  {
 
     BandInfo[] pairedBands;
     BandClient bandClient;
@@ -60,6 +81,16 @@ public class Profile extends AppCompatActivity
     TextView BandAccel;
     TextView BandGyro;
     TextView BandUV;
+
+    private LocationManager locationMangaer=null;
+    private LocationListener locationListener=null;
+
+    private Button btnGetLocation = null;
+    private EditText editLocation = null;
+    private ProgressBar pb =null;
+
+    private static final String TAG = "Debug";
+    private Boolean flag = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,6 +131,21 @@ public class Profile extends AppCompatActivity
         // will be thrown if called from the UI thread.
 
         bandConsent(); // new SDK requires consent to read from HR sensor
+
+        //if you want to lock screen for always Portrait mode
+        setRequestedOrientation(ActivityInfo
+                .SCREEN_ORIENTATION_PORTRAIT);
+
+        pb = (ProgressBar) findViewById(R.id.progressBar1);
+        pb.setVisibility(View.INVISIBLE);
+
+        editLocation = (EditText) findViewById(R.id.editTextLocation);
+
+        btnGetLocation = (Button) findViewById(R.id.btnLocation);
+        btnGetLocation.Profile(this);
+
+        locationMangaer = (LocationManager)
+                getSystemService(Context.LOCATION_SERVICE);
     }
 
     private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
