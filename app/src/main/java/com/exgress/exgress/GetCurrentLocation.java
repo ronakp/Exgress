@@ -43,10 +43,10 @@ public class GetCurrentLocation extends Activity implements OnClickListener{
     boolean isGPSEnabled;
     boolean isNetworkEnabled;
     boolean locationServiceAvailable;
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 10 meters
 
     //The minimum time beetwen updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 60000;//1000 * 60 * 1; // 1 minute
+    private static final long MIN_TIME_BW_UPDATES = 0;//1000 * 60 * 1; // 1 minute
 
     private final static boolean forceNetwork = false;
     private Button btnGetLocation = null;
@@ -84,7 +84,7 @@ public class GetCurrentLocation extends Activity implements OnClickListener{
         flag = displayGpsStatus();
         if (flag) {
 
-            Log.v(TAG, "onClick");
+            Log.v(TAG, flag.toString());
 
             editLocation.setText("Please!! move your device to" +
                     " see the changes in coordinates." + "\nWait..");
