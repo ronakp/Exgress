@@ -27,16 +27,39 @@ import android.os.AsyncTask;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+import com.microsoft.band.ConnectionState;
+import com.microsoft.band.BandInfo;
+import com.microsoft.band.BandException;
+import com.microsoft.band.BandPendingResult;
+import com.microsoft.band.UserConsent;
+import com.microsoft.band.sensors.BandAccelerometerEventListener;
+import com.microsoft.band.sensors.BandHeartRateEvent;
+import com.microsoft.band.sensors.BandHeartRateEventListener;
+import com.microsoft.band.sensors.HeartRateConsentListener;
+import com.microsoft.band.sensors.BandSkinTemperatureEvent;
+import com.microsoft.band.sensors.BandSkinTemperatureEventListener;
+import com.microsoft.band.sensors.BandAccelerometerEvent;
+import com.microsoft.band.sensors.BandAccelerometerEventListener;
+import com.microsoft.band.sensors.BandGyroscopeEvent;
+import com.microsoft.band.sensors.BandGyroscopeEventListener;
+import com.microsoft.band.sensors.BandUVEvent;
+import com.microsoft.band.sensors.BandUVEventListener;
+import com.microsoft.band.sensors.SampleRate;
 
 
 
 public class Profile extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-
-    private BandClient bandClient;
-    private TextView txtStatus;
-    private Button btnStart;
+    BandInfo[] pairedBands;
+    BandClient bandClient;
+    TextView BandVersion;
+    TextView BandHR;
+    TextView BandTemp;
+    TextView BandFVersion;
+    TextView BandAccel;
+    TextView BandGyro;
+    TextView BandUV;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,77 +85,207 @@ public class Profile extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        pairedBands = BandClientManager.getInstance().getPairedBands();
+        bandClient = BandClientManager.getInstance().create(getApplicationContext(), pairedBands[0]);
 
-        // initialize bands
-        BandInfo[] pairedBands = BandClientManager.getInstance().getPairedBands();
+        BandVersion = (TextView) findViewById(R.id.BandVer);
+        BandHR = (TextView) findViewById(R.id.BandHR);
+        BandTemp = (TextView) findViewById(R.id.BandTemp);
+        BandFVersion = (TextView) findViewById(R.id.BandFVer);
+        BandAccel = (TextView) findViewById(R.id.BandAccel);
+        BandGyro = (TextView) findViewById(R.id.BandGyro);
+        BandUV = (TextView) findViewById(R.id.BandUV);
 
-        this.bandClient = BandClientManager.getInstance().create(Profile.this.getApplicationContext(), pairedBands[0]);
+        // Note: the BandClient.Connect method must be called from a background thread. An exception
+        // will be thrown if called from the UI thread.
 
-        BandPendingResult<ConnectionState> pendingResult =
-                bandClient.connect();
+        bandConsent(); // new SDK requires consent to read from HR sensor
+    }
+
+    private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
+        @Override
+        public void userAccepted(boolean b) {
+            // handle user's heart rate consent decision
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        helloMSBand();
+                    } catch (BandException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+    };
+
+    public boolean bandConsent() {
+        if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
+            bandClient.getSensorManager().requestHeartRateConsent(this, mHeartRateConsentListener);
+            return false;
+        } else {
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        helloMSBand();
+                    } catch (BandException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            return true;
+        }
+    }
+
+    public void helloMSBand() throws BandException {
+        BandPendingResult<ConnectionState> pendingResult = bandClient.connect();
+
         try {
-            ConnectionState state = pendingResult.await();
-            if(state == ConnectionState.CONNECTED) {
-// do work on success
-                System.out.println("Connection Success");
+            ConnectionState result = pendingResult.await();
+            if(result == ConnectionState.CONNECTED) {
+                try {
+                    BandPendingResult<String> pendingVersion = bandClient.getFirmwareVersion();
+                    final String fwVersion = pendingVersion.await();
+                    pendingVersion = bandClient.getHardwareVersion();
+                    final String hwVersion = pendingVersion.await();
+                    BandVersion.post(new Runnable() {
+                        @Override
+                        public void run() { BandVersion.setText(hwVersion);
+                        }
+                    });
+                    BandFVersion.post(new Runnable() {
+                        @Override
+                        public void run() { BandFVersion.setText(fwVersion);
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    // catch
+                } catch(BandException ex) {
+                    // catch
+                }
+
+                BandHeartRateEventListener heartRateListener = new BandHeartRateEventListener() {
+                    public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
+                        final String HR = String.valueOf(bandHeartRateEvent.getHeartRate());
+                        BandHR.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                BandHR.setText(HR);
+                            }
+                        });
+                    }
+                };
+
+
+                BandSkinTemperatureEventListener skinTemperatureEventListener = new BandSkinTemperatureEventListener() {
+                    @Override
+                    public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
+                        final String TempF = String.valueOf(bandSkinTemperatureEvent.getTemperature());
+                        BandTemp.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                BandTemp.setText(TempF);
+                            }
+                        });
+                    }
+                };
+
+                BandAccelerometerEventListener accelerometerEventListener = new BandAccelerometerEventListener() {
+                    @Override
+                    public void onBandAccelerometerChanged(BandAccelerometerEvent bandAccelerometerEvent) {
+                        final String AccX = String.format("%.2f", bandAccelerometerEvent.getAccelerationX());
+                        final String AccY = String.format("%.2f", bandAccelerometerEvent.getAccelerationY());
+                        final String AccZ = String.format("%.2f", bandAccelerometerEvent.getAccelerationZ());
+                        BandAccel.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                BandAccel.setText("X " + AccX + ", Y " + AccY + ", Z " + AccZ);
+                            }
+                        });
+                    }
+                };
+
+                BandGyroscopeEventListener gyroscopeEventListener = new BandGyroscopeEventListener() {
+                    @Override
+                    public void onBandGyroscopeChanged(BandGyroscopeEvent bandGyroscopeEvent) {
+                        final String GyrX = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityX());
+                        final String GyrY = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityY());
+                        final String GyrZ = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityZ());
+                        BandGyro.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                BandGyro.setText("X " + GyrX + ", Y " + GyrY + ", Z " + GyrZ);
+                            }
+                        });
+                    }
+                };
+
+                BandUVEventListener uvEventListener = new BandUVEventListener() {
+                    @Override
+                    public void onBandUVChanged(BandUVEvent bandUVEvent) {
+                        final String UVRead = String.valueOf(bandUVEvent.getUVIndexLevel());
+                        BandUV.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                BandUV.setText(UVRead);
+                            }
+                        });
+                    }
+                };
+
+                try {
+                    bandClient.getSensorManager().registerUVEventListener(uvEventListener);
+                } catch(BandException ex) {
+                    //catch
+                }
+
+                try {
+                    bandClient.getSensorManager().registerAccelerometerEventListener(accelerometerEventListener, SampleRate.MS128);
+                } catch(BandException ex) {
+                    // catch
+                }
+
+                try {
+                    bandClient.getSensorManager().registerGyroscopeEventListener(gyroscopeEventListener, SampleRate.MS128);
+                } catch(BandException ex) {
+
+                }
+
+                try {
+                    bandClient.getSensorManager().registerHeartRateEventListener(heartRateListener);
+                } catch(BandException ex) {
+                    // catch
+                }
+
+                try {
+                    bandClient.getSensorManager().registerSkinTemperatureEventListener(skinTemperatureEventListener);
+                } catch(BandException ex) {
+                    // catch
+                }
+
+//                try {
+//                    // Create a bitmap for the Me Tile image, must be 310x102 pixels
+//                    Bitmap image = Bitmap.createBitmap(310, 102, Bitmap.Config.ARGB_4444);
+//                    image.eraseColor(Color.DKGRAY);
+//                    //Bitmap meTileBitmap = Bitmap.createBitmap(310, 102, null);
+//                    bandClient.getPersonalizationManager().setMeTileImage(image).await();
+//                } catch (InterruptedException e) {
+//                    // catch
+//                } catch (BandException e) {
+//                    // catch
+//                }
             } else {
-// do work on failure
-                System.out.println("Connection Failed :( , Try Again !");
+                BandVersion.setText("Connection failed.. ");
             }
-        } catch(InterruptedException ex) {
-// handle InterruptedException
-        } catch(BandException ex) {
-// handle BandException
         }
-
-        String hwVersion = "19";
-        String fwVersion = "10.3.3304.0";       // should be this or later
-        try {
-            fwVersion = bandClient.getFirmwareVersion().await();
-            hwVersion = bandClient.getHardwareVersion().await();
-        } catch (InterruptedException ex) {
-// handle InterruptedException
-        } catch (BandIOException ex) {
-// handle BandIOException
-        } catch (BandException ex) {
-// handle BandException
+        catch(InterruptedException ex) {
+            // catch
+        }
+        catch(BandException ex) {
+            // catch
         }
     }
 
-     private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener();
-    public void startHRListener() {
-        try {
-            // register HR sensor event listener
-            bandClient.getSensorManager().registerHeartRateEventListener(mHeartRateConsentListener);
-        } catch (BandIOException ex) {
-            appendToUI(ex.getMessage(), band);
-        } catch (BandException e) {
-            String exceptionMessage="";
-            switch (e.getErrorType()) {
-                case UNSUPPORTED_SDK_VERSION_ERROR:
-                    exceptionMessage = "Microsoft Health BandService doesn't support your SDK Version. Please update to latest SDK.";
-                    break;
-                case SERVICE_ERROR:
-                    exceptionMessage = "Microsoft Health BandService is not available. Please make sure Microsoft Health is installed and that you have the correct permissions.";
-                    break;
-                default:
-                    exceptionMessage = "Unknown error occurred: " + e.getMessage();
-                    break;
-            }
-            appendToUI(exceptionMessage, band);
 
-        } catch (Exception e) {
-            appendToUI(e.getMessage(), band);
-        }
-    }
-    private void appendToUI(final String string) {
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                txtStatus.setText(string);
-            }
-        });
-    }
 
     @Override
     public void onBackPressed() {
