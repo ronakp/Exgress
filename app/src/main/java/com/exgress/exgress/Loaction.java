@@ -140,7 +140,7 @@ public class GetCurrentLocation extends Activity
                     }
                 }
             } catch (Exception ex)  {
-                LogService.log( "Error creating location service: " + ex.getMessage() );
+              //  LogService.log( "Error creating location service: " + ex.getMessage() );
 
             }
 
