@@ -3,4 +3,6 @@
     xmlns:map="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
     android:layout_height="match_parent" android:id="@+id/map"
     tools:context="com.exgress.exgress.World"
-    android:name="com.google.android.gms.maps.SupportMapFragment" />
+    android:name="com.google.android.gms.maps.SupportMapFragment"
+    tools:layout="@layout/world" />
+
