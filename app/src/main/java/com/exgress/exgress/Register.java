@@ -7,9 +7,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -23,9 +26,6 @@ public class Register extends AppCompatActivity {
     EditText username;
     EditText email;
     EditText password;
-    String uval;
-    String eval;
-    String pval;
 
     private class NewUserModel {
         String username;
@@ -86,11 +86,15 @@ public class Register extends AppCompatActivity {
                     sb.append(line);
                 }
                 br.close();
-                String result = sb.toString();
-                //Toast.makeText(Register.this, result, Toast.LENGTH_SHORT).show();
-            /*in = new BufferedInputStream(urlConnection.getInputStream());*/
+                String resultr = sb.toString();
+                JSONObject jResultl = new JSONObject(resultr);
+                String ree = jResultl.getString("Response");
+                Log.d("Hello", resultr);
+                if(ree.equals("success")) {
+                    Intent intentlog = new Intent(getApplicationContext(), Login.class);
+                    startActivity(intentlog);
+                }
             } catch (Exception e ) {
-
                 System.out.println(e.getMessage());
             }
             return null;

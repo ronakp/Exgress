@@ -4,8 +4,12 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -20,32 +24,42 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class Login extends AppCompatActivity {
+    EditText username;
+    EditText password;
 
-    InputStream in = null;
+    private class LoginUserModel {
+        String username;
+        String password;
 
+        public LoginUserModel(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-        new GetLoginTask().execute();
+        username = (EditText) findViewById(R.id.editText);
+        password = (EditText) findViewById(R.id.editText2);
     }
 
     public void loginpro(View v) {
-
-
-        Intent intent1 = new Intent(this, Profile.class);
-        startActivity(intent1);
+        LoginUserModel loginUserModel = new LoginUserModel(
+                username.getText().toString(),
+                password.getText().toString());
+        new GetLoginTask().execute(loginUserModel);
     }
 
     public void registerpro(View v) {
-        Intent intent2 = new Intent(this, Register.class);
-        startActivity(intent2);
+        Intent intentreg = new Intent(this, Register.class);
+        startActivity(intentreg);
     }
 
-    private class GetLoginTask extends AsyncTask<Void, Void, Void> {
+    private class GetLoginTask extends AsyncTask<LoginUserModel, Void, Void> {
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(LoginUserModel... params) {
             try {
                 URL url = new URL("http://exgress.azurewebsites.net/api/Account/LogIn");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -56,14 +70,13 @@ public class Login extends AppCompatActivity {
                 OutputStream os = urlConnection.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
                 writer.write("{ \n" +
-                        "  \"username\": \"tester\",\n" +
-                        "  \"password\": \"password\"\n" +
+                        "  \"username\": \"" + params[0].username + "\",\n" +
+                        "  \"password\": \""+ params[0].password + "\"\n" +
                         "}");
                 writer.close();
                 os.close();
                 //Read
                 BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
-
                 String line = null;
                 StringBuilder sb = new StringBuilder();
 
@@ -72,8 +85,14 @@ public class Login extends AppCompatActivity {
                 }
                 br.close();
                 String result = sb.toString();
-                Toast.makeText(Login.this, result, Toast.LENGTH_SHORT).show();
-            /*in = new BufferedInputStream(urlConnection.getInputStream());*/
+
+                JSONObject jResult = new JSONObject(result);
+                String re = jResult.getString("Response");
+                Log.d("Hello", re);
+                if(re.equals("success")) {
+                    Intent intentlog = new Intent(getApplicationContext(), Profile.class);
+                    startActivity(intentlog);
+                }
             } catch (Exception e ) {
 
                 System.out.println(e.getMessage());
