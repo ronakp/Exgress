@@ -44,7 +44,7 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Yale));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(41.316236, -72.922493), 18));
+                Yale, 18));
     }
 
     private boolean initMap(){
