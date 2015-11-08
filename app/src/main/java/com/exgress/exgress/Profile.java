@@ -3,6 +3,7 @@ package com.exgress.exgress;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -100,7 +101,10 @@ public class Profile extends AppCompatActivity
         bandConsent(); // new SDK requires consent to read from HR sensor
     }
 
-
+public void worldcheck()
+{
+   //code for changing fragment to world
+}
 
 //
 //      R.id.nav_world.(new View.OnClickListener() {
