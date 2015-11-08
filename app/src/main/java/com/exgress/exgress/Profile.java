@@ -78,8 +78,6 @@ public class Profile extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -100,37 +98,6 @@ public class Profile extends AppCompatActivity
         // will be thrown if called from the UI thread.
         bandConsent(); // new SDK requires consent to read from HR sensor
     }
-
-/*public void worldcheck(View view)
-{
-   //code for changing fragment to world
-            Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
-        Log.d("Done","click works");
-            Fragment frag = new World();
-
-
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.container, frag);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.addToBackStack(null);
-            ft.commit();
-}*/
-
-//
-//      R.id.nav_world.(new View.OnClickListener() {
-//        @Override
-//        public void onClick(View v){
-//
-//            Fragment frag = new World();
-//
-//
-//            FragmentTransaction ft = getFragmentManager().beginTransaction();
-//            ft.replace(R.id.container, frag);
-//            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-//            ft.addToBackStack(null);
-//            ft.commit();
-//        }
-//    });
 
 
     @Override
