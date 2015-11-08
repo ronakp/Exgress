@@ -2,6 +2,7 @@ package com.exgress.exgress;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,27 +19,27 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class World extends Fragment/*Activity implements OnMapReadyCallback */{
+public class World extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private MapView mapView;
 
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.world);
-//        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-//                .findFragmentById(R.id.map);
-//        mapFragment.getMapAsync(this);
-//
-////        // Gets the MapView from the XML layout and creates it
-////        mapView = (MapView) ;
-////        mapView.onCreate(savedInstanceState);
-//    }
-
-
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.world);
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+//        // Gets the MapView from the XML layout and creates it
+//        mapView = (MapView) ;
+//        mapView.onCreate(savedInstanceState);
+    }
+
+
+    /*@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.world, container, false);
 
@@ -52,7 +53,7 @@ public class World extends Fragment/*Activity implements OnMapReadyCallback */{
         mMap.setMyLocationEnabled(true);
 
         // Needs to call MapsInitializer before doing any CameraUpdateFactory calls
-        MapsInitializer.initialize(this.getActivity());
+        MapsInitializer.initialize(this.getApplicationContext());
 
 
         // Updates the location and zoom of the MapView
@@ -60,7 +61,7 @@ public class World extends Fragment/*Activity implements OnMapReadyCallback */{
         mMap.animateCamera(cameraUpdate);
 
         return v;
-    }
+    }*/
 
     @Override
     public void onResume() {
@@ -91,13 +92,13 @@ public class World extends Fragment/*Activity implements OnMapReadyCallback */{
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
-//    @Override
-//    public void onMapReady(GoogleMap googleMap) {
-//        mMap = googleMap;
-//
-//        // Add a marker in Sydney and move the camera
-//        LatLng sydney = new LatLng(-34, 151);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-//    }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    }
 }

@@ -101,7 +101,7 @@ public class Profile extends AppCompatActivity
         bandConsent(); // new SDK requires consent to read from HR sensor
     }
 
-public void worldcheck()
+/*public void worldcheck(View view)
 {
    //code for changing fragment to world
             Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
@@ -114,7 +114,7 @@ public void worldcheck()
             ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             ft.addToBackStack(null);
             ft.commit();
-}
+}*/
 
 //
 //      R.id.nav_world.(new View.OnClickListener() {
@@ -401,18 +401,19 @@ public void worldcheck()
 
     }
 
-//    public void actionRescourceClickHandler(MenuItem item){
-//
-//        Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
-//        Log.d("Done","click works");
-//            Fragment frag = new World();
-//
-//
-//            FragmentTransaction ft = getFragmentManager().beginTransaction();
-//            ft.replace(R.id.container, frag);
-//            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-//            ft.addToBackStack(null);
-//            ft.commit();
-//    }
+    public void actionRescourceClickHandler(MenuItem item){
+
+        Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
+        Log.d("Done","click works");
+            //Fragment frag = new World();
+       /* Intent intentwo = new Intent(getApplicationContext(), World.class);
+        startActivity(intentwo);*/
+
+           /* FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.container, frag);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.addToBackStack(null);
+            ft.commit();*/
+    }
 
 }
