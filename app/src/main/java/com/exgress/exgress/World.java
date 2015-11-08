@@ -101,4 +101,12 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
+
+    private boolean initMap(){
+        if (mMap== null){
+            SupportMapFragment mapFrag = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.nav_world);
+            mMap = mapFrag.getMap();
+        }
+        return (mMap!=null);
+    }
 }
