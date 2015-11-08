@@ -26,7 +26,7 @@ public class Register extends AppCompatActivity {
     EditText username;
     EditText email;
     EditText password;
-
+    EditText repassword;
     private class NewUserModel {
         String username;
         String password;
@@ -45,15 +45,21 @@ public class Register extends AppCompatActivity {
         username = (EditText) findViewById(R.id.editText3);
         email = (EditText) findViewById(R.id.editText4);
         password = (EditText) findViewById(R.id.editText5);
+        repassword = (EditText) findViewById(R.id.editText6);
     }
     public void register(View v) {
         NewUserModel newUserModel = new NewUserModel(
                 username.getText().toString(),
                 password.getText().toString(),
                 email.getText().toString());
-        new GetRegisterTask().execute(newUserModel);
-        //Intent intent2 = new Intent(this, Register.class);
-        //startActivity(intent2);
+        if(password.getText().toString().equals(repassword.getText().toString()))
+        {
+            new GetRegisterTask().execute(newUserModel);
+        }
+        else
+        {
+            Toast.makeText(Register.this, "Password Does't Match", Toast.LENGTH_LONG).show();
+        }
     }
 
     private class GetRegisterTask extends AsyncTask<NewUserModel, Void, Void> {
@@ -89,7 +95,6 @@ public class Register extends AppCompatActivity {
                 String resultr = sb.toString();
                 JSONObject jResultl = new JSONObject(resultr);
                 String ree = jResultl.getString("Response");
-                Log.d("Hello", resultr);
                 if(ree.equals("success")) {
                     Intent intentlog = new Intent(getApplicationContext(), Login.class);
                     startActivity(intentlog);

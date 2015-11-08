@@ -44,13 +44,19 @@ public class Login extends AppCompatActivity {
         password = (EditText) findViewById(R.id.editText2);
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
     public void loginpro(View v) {
-        Intent intentlog = new Intent(getApplicationContext(), Profile.class);
-        startActivity(intentlog);
-//        LoginUserModel loginUserModel = new LoginUserModel(
-//                username.getText().toString(),
-//                password.getText().toString());
-//        new GetLoginTask().execute(loginUserModel);
+        LoginUserModel loginUserModel = new LoginUserModel(
+                username.getText().toString(),
+                password.getText().toString());
+        new GetLoginTask().execute(loginUserModel);
     }
 
     public void registerpro(View v) {
@@ -90,13 +96,11 @@ public class Login extends AppCompatActivity {
 
                 JSONObject jResult = new JSONObject(result);
                 String re = jResult.getString("Response");
-                Log.d("Hello", re);
                 if(re.equals("success")) {
                     Intent intentlog = new Intent(getApplicationContext(), Profile.class);
                     startActivity(intentlog);
                 }
             } catch (Exception e ) {
-
                 System.out.println(e.getMessage());
             }
             return null;
