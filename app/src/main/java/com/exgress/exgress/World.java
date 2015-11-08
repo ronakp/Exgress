@@ -97,12 +97,12 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng Yale = new LatLng(41.316236, -72.922493);
+        mMap.addMarker(new MarkerOptions().position(Yale).title("Marker in Yale"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(Yale));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(-33.86997, 151.2089), 18));
+                new LatLng(41.316236, -72.922493), 18));
     }
 
     private boolean initMap(){
