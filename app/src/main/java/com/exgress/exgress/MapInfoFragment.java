@@ -110,7 +110,7 @@ public class MapInfoFragment extends Fragment {
                             sampleHeartRate = true;
                         }
                     }, 1000, 1000);
-                    new ActionActivities().execute(node);
+                    new ActionActivities().execute();
                     activityStop = false;
                 } else {
                     actionButton.setText("Click To Energize");
@@ -358,10 +358,10 @@ public class MapInfoFragment extends Fragment {
         }
     }
 
-    private class ActionActivities extends AsyncTask<NodeModel, String, Void> {
+    private class ActionActivities extends AsyncTask<Void, String, Void> {
 
         @Override
-        protected Void doInBackground(final NodeModel... params) {
+        protected Void doInBackground(Void... params) {
             //here, we can connect to the server and send updates... yeah this might be a bit fun
             //we are sending updates once every 10 seconds
 
@@ -374,7 +374,7 @@ public class MapInfoFragment extends Fragment {
                             submitTimer.cancel();
                             submitTimer.purge();
                         }
-                        String action = userFaction.equals(params[0].faction) ? Constants.ReinforceSubmission : Constants.DrainSubmission;
+                        String action = userFaction.equals(node.faction) ? Constants.ReinforceSubmission : Constants.DrainSubmission;
 
                         URL url = new URL("http://exgress.azurewebsites.net/api/Node/Update");
                         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -385,8 +385,8 @@ public class MapInfoFragment extends Fragment {
                         OutputStream os = urlConnection.getOutputStream();
                         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
                         writer.write("{\n" +
-                                "  \"Name\": \"" + params[0].name + "\",\n" +
-                                "  \"Faction\": \"" + params[0].faction + "\",\n" +
+                                "  \"Name\": \"" + node.name + "\",\n" +
+                                "  \"Faction\": \"" + node.faction + "\",\n" +
                                 "  \"Action\": \"" + action + "\",\n" +
                                 "  \"HP\": \"" + collectedHp + "\"\n" +
                                 "}");
