@@ -61,7 +61,7 @@ public class MapInfoFragment extends Fragment {
 
     private Button actionButton;
 
-    private TextView name, location, faction, hp;
+    private TextView name, location, faction, hp, heartBeat;
     private ImageView factionIcon;
 
     BandInfo[] pairedBands;
@@ -142,6 +142,7 @@ public class MapInfoFragment extends Fragment {
         location = (TextView)view.findViewById(R.id.SpotCoordinates);
         faction = (TextView)view.findViewById(R.id.SpotFaction);
         hp = (TextView)view.findViewById(R.id.SpotHealth);
+        heartBeat = (TextView)view.findViewById(R.id.HeartBeatText);
         factionIcon = (ImageView)view.findViewById(R.id.SpotImage);
 
         return view;
@@ -220,6 +221,7 @@ public class MapInfoFragment extends Fragment {
                             collectedHp += bandHeartRateEvent.getHeartRate();
                             sampleHeartRate = false;
                         }
+                        heartBeat.setText(bandHeartRateEvent.getHeartRate());
                     }
                 };
 
@@ -288,10 +290,7 @@ public class MapInfoFragment extends Fragment {
                 //BandVersion.setText("Connection failed.. ");
             }
         }
-        catch(InterruptedException ex) {
-
-        }
-        catch(BandException ex) {
+        catch(InterruptedException | BandException ex) {
 
         }
     }
