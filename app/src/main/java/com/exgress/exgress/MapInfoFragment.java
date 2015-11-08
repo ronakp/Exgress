@@ -154,11 +154,16 @@ public class MapInfoFragment extends Fragment {
     }
 
     public void updateSelectedLocation(NodeModel model) {
+        activityStop = true;
         node = model;
         name.setText(model.name);
+        name.setVisibility(View.VISIBLE);
         location.setText(model.latitude + " : " + model.longitude);
+        location.setVisibility(View.VISIBLE);
         faction.setText(model.faction);
+        faction.setVisibility(View.VISIBLE);
         hp.setText(model.hp);
+        hp.setVisibility(View.VISIBLE);
         if (model.faction.equals(Constants.BlueFaction)){
             factionIcon.setBackgroundResource(R.drawable.purist);
         } else {

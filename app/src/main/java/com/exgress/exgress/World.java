@@ -23,13 +23,27 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class World extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private MapView mapView;
     private GoogleApiClient mGoogleApiClient;
+    private MapInfoFragment mapInfoFragment
+    private Map<String, NodeModel> cachedLocations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +52,7 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        mapInfoFragment = (MapInfoFragment) getFragmentManager().findFragmentById(R.id.ExgressMapInfoFragment);
         mapFragment.getMapAsync(this);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -45,6 +60,8 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+
+        cachedLocations = new HashMap<>();
     }
 
     @Override
@@ -65,14 +82,20 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                new FetchNearByNodes().execute();
+            }
+        }, 1000, 20000);
 
-        // Add a marker in Sydney and move the camera
-        LatLng Yale = new LatLng(41.316236, -72.922493);
-        mMap.addMarker(new MarkerOptions().position(Yale).title("Marker in Yale"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(Yale));
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                Yale, 18));
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                String key = latLng.latitude + ":" + latLng.longitude;
+                mapInfoFragment.updateSelectedLocation(cachedLocations.get(key));
+            }
+        });
     }
 
     private boolean initMap(){
@@ -83,13 +106,58 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
         return (mMap!=null);
     }
 
-    protected class FetchNearByNodes extends AsyncTask<String, Void, List<NodeModel>> {
+    protected class FetchNearByNodes extends AsyncTask<Void, Void, List<NodeModel>> {
 
         @Override
-        protected List<NodeModel> doInBackground(String... params) {
+        protected List<NodeModel> doInBackground(Void... params) {
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
+            try {
+                URL url = new URL("http://exgress.azurewebsites.net/api/Node?latitude=" + location.getLatitude()
+                        + "&longitude" + location.getLongitude());
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
 
+                String line;
+                StringBuilder sb = new StringBuilder();
+
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                String resultr = sb.toString();
+
+                JSONArray result = new JSONArray(resultr);
+                List<NodeModel> toReturn = new ArrayList<>();
+                for (int i = 0; i < result.length(); i++) {
+                    JSONObject jsonObject = result.getJSONObject(i);
+                    NodeModel model = new NodeModel(
+                            jsonObject.getString(Constants.NameColumn),
+                            (float)jsonObject.getDouble(Constants.LatitudeColumn),
+                            (float)jsonObject.getDouble(Constants.LongitudeColumn),
+                            jsonObject.getString(Constants.FactionColumn),
+                            jsonObject.getInt(Constants.HPColumn)
+                    );
+                    toReturn.add(model);
+                }
+                return toReturn;
+            }
+            catch (Exception e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<NodeModel> nodeModels) {
+            for (NodeModel nodeModel : nodeModels) {
+                LatLng location = new LatLng(nodeModel.latitude, nodeModel.longitude);
+                mMap.addMarker(new MarkerOptions().position(location).title(nodeModel.name));
+                String key = nodeModel.latitude + ":" + nodeModel.longitude;
+                cachedLocations.put(key, nodeModel);
+            }
         }
     }
 }
+
