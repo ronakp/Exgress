@@ -1,10 +1,12 @@
 package com.exgress.exgress;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +34,15 @@ import com.microsoft.band.sensors.BandUVEventListener;
 import com.microsoft.band.sensors.HeartRateConsentListener;
 import com.microsoft.band.sensors.SampleRate;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,12 +57,8 @@ import java.util.TimerTask;
 public class MapInfoFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private static final String NODE_NAME = "nodeName";
+    private static final String USER_FACTION = "userFaction";
 
     private Button actionButton;
 
@@ -66,21 +73,22 @@ public class MapInfoFragment extends Fragment {
     private Timer submitTimer;
     private int collectedHp = 0;
     private boolean activityStop = false;
+    private NodeModel node;
+    private String nodeName, userFaction;
 
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
      * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment MapInfoFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MapInfoFragment newInstance(String param1, String param2) {
+    public static MapInfoFragment newInstance(String nodeName, String userFaction) {
         MapInfoFragment fragment = new MapInfoFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(NODE_NAME, nodeName);
+        args.putString(USER_FACTION, userFaction);
         fragment.setArguments(args);
         return fragment;
     }
@@ -93,8 +101,8 @@ public class MapInfoFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            nodeName = getArguments().getString(NODE_NAME);
+            userFaction = getArguments().getString(USER_FACTION);
         }
         pairedBands = BandClientManager.getInstance().getPairedBands();
         bandClient = BandClientManager.getInstance().create(getActivity(), pairedBands[0]);
@@ -285,12 +293,62 @@ public class MapInfoFragment extends Fragment {
         }
     }
 
-    private class ActionActivities extends AsyncTask<Void, String, Void> {
+    private class FetchNodeInfoActivity extends AsyncTask<String, Void, NodeModel> {
+        @Override
+        protected NodeModel doInBackground(String... params) {
+            return null;
+        }
+    }
+
+    private class ActionActivities extends AsyncTask<NodeModel, String, Void> {
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(NodeModel... params) {
             //here, we can connect to the server and send updates... yeah this might be a bit fun
             //we are sending updates once every 10 seconds
+
+            //I am going to hate myself for writing tihs
+            try {
+
+                String action = userFaction.equals(params[0].faction) ? Constants.ReinforceSubmission : Constants.DrainSubmission;
+
+                URL url = new URL("http://exgress.azurewebsites.net/api/Node/Update");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type","application/JSON");
+                urlConnection.connect();
+                //Write
+                OutputStream os = urlConnection.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.write("{\n" +
+                        "  \"Name\": \"" + params[0].name + "\",\n" +
+                        "  \"Faction\": \"" + params[0].faction + "\",\n" +
+                        "  \"Action\": \"" + action + "\"\n" +
+                        "  \"HP\": \"" + collectedHp + "\"\n" +
+                        "}");
+                writer.close();
+                os.close();
+                //Read
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
+
+                String line = null;
+                StringBuilder sb = new StringBuilder();
+
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                String resultr = sb.toString();
+                JSONObject jResultl = new JSONObject(resultr);
+                String ree = jResultl.getString("Response");
+                Log.d("Hello", resultr);
+                if(ree.equals("success")) {
+                    
+                }
+            } catch (Exception e ) {
+                System.out.println(e.getMessage());
+            }
+
             return null;
         }
 
