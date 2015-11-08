@@ -97,7 +97,7 @@ public class Login extends AppCompatActivity {
                 JSONObject jResult = new JSONObject(result);
                 String re = jResult.getString("Response");
                 if(re.equals("success")) {
-                    Intent intentlog = new Intent(getApplicationContext(), Profile.class);
+                    Intent intentlog = new Intent(getApplicationContext(), World.class);
                     startActivity(intentlog);
                 }
             } catch (Exception e ) {

@@ -1,5 +1,7 @@
 package com.exgress.exgress;
 
+import android.location.Location;
+import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +11,8 @@ import android.view.ViewGroup;
 import android.app.Fragment;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,10 +23,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.List;
+
 public class World extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private MapView mapView;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +39,27 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     @Override
@@ -53,5 +81,15 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
            // mMap = mapFrag.getMap();
         }
         return (mMap!=null);
+    }
+
+    protected class FetchNearByNodes extends AsyncTask<String, Void, List<NodeModel>> {
+
+        @Override
+        protected List<NodeModel> doInBackground(String... params) {
+            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+
+        }
     }
 }
