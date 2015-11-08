@@ -51,59 +51,26 @@ import com.microsoft.band.sensors.BandUVEventListener;
 import com.microsoft.band.sensors.SampleRate;
 import com.google.android.gms.common.ConnectionResult;
 
-
-
 public class Profile extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks,
+        implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
-    BandInfo[] pairedBands;
-    BandClient bandClient;
-    /*TextView BandVersion;
-    TextView BandHR;
-    TextView BandTemp;
-    TextView BandFVersion;
-    TextView BandAccel;
-    TextView BandGyro;
-    TextView BandUV;*/
     private GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.profile);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-
-        pairedBands = BandClientManager.getInstance().getPairedBands();
-        bandClient = BandClientManager.getInstance().create(getApplicationContext(), pairedBands[0]);
-        /*BandVersion = (TextView) findViewById(R.id.BandVer);
-        BandHR = (TextView) findViewById(R.id.BandHR);
-        BandTemp = (TextView) findViewById(R.id.BandTemp);
-        BandFVersion = (TextView) findViewById(R.id.BandFVer);
-        BandAccel = (TextView) findViewById(R.id.BandAccel);
-        BandGyro = (TextView) findViewById(R.id.BandGyro);
-        BandUV = (TextView) findViewById(R.id.BandUV);*/
-        // Note: the BandClient.Connect method must be called from a background thread. An exception
-        // will be thrown if called from the UI thread.
-        bandConsent(); // new SDK requires consent to read from HR sensor
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
-
         mGoogleApiClient.connect();
     }
 
@@ -112,187 +79,6 @@ public class Profile extends AppCompatActivity
         super.onPause();
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
-        }
-    }
-    private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
-        @Override
-        public void userAccepted(boolean b) {
-            // handle user's heart rate consent decision
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        helloMSBand();
-                    } catch (BandException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        }
-    };
-
-    public boolean bandConsent() {
-        if (bandClient.getSensorManager().getCurrentHeartRateConsent() != UserConsent.GRANTED) {
-            bandClient.getSensorManager().requestHeartRateConsent(this, mHeartRateConsentListener);
-            return false;
-        } else {
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        helloMSBand();
-                    } catch (BandException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-            return true;
-        }
-    }
-
-    public void helloMSBand() throws BandException {
-        BandPendingResult<ConnectionState> pendingResult = bandClient.connect();
-
-        try {
-            ConnectionState result = pendingResult.await();
-            if(result == ConnectionState.CONNECTED) {
-                try {
-                    BandPendingResult<String> pendingVersion = bandClient.getFirmwareVersion();
-                    final String fwVersion = pendingVersion.await();
-                    pendingVersion = bandClient.getHardwareVersion();
-                    final String hwVersion = pendingVersion.await();
-                    /*BandVersion.post(new Runnable() {
-                        @Override
-                        public void run() { //BandVersion.setText(hwVersion);
-                        }
-                    });
-                    BandFVersion.post(new Runnable() {
-                        @Override
-                        public void run() { //BandFVersion.setText(fwVersion);
-                        }
-                    });*/
-                } catch (InterruptedException ex) {
-                    // catch
-                } catch(BandException ex) {
-                    // catch
-                }
-
-                BandHeartRateEventListener heartRateListener = new BandHeartRateEventListener() {
-                    public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
-                        final String HR = String.valueOf(bandHeartRateEvent.getHeartRate());
-                        /*BandHR.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                //BandHR.setText(HR);
-                            }
-                        });*/
-                    }
-                };
-
-
-                BandSkinTemperatureEventListener skinTemperatureEventListener = new BandSkinTemperatureEventListener() {
-                    @Override
-                    public void onBandSkinTemperatureChanged(BandSkinTemperatureEvent bandSkinTemperatureEvent) {
-                        final String TempF = String.valueOf(bandSkinTemperatureEvent.getTemperature());
-                       /* BandTemp.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                //BandTemp.setText(TempF);
-                            }
-                        });*/
-                    }
-                };
-
-                BandAccelerometerEventListener accelerometerEventListener = new BandAccelerometerEventListener() {
-                    @Override
-                    public void onBandAccelerometerChanged(BandAccelerometerEvent bandAccelerometerEvent) {
-                        final String AccX = String.format("%.2f", bandAccelerometerEvent.getAccelerationX());
-                        final String AccY = String.format("%.2f", bandAccelerometerEvent.getAccelerationY());
-                        final String AccZ = String.format("%.2f", bandAccelerometerEvent.getAccelerationZ());
-                       /* BandAccel.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                //BandAccel.setText("X " + AccX + ", Y " + AccY + ", Z " + AccZ);
-                            }
-                        });*/
-                    }
-                };
-
-                BandGyroscopeEventListener gyroscopeEventListener = new BandGyroscopeEventListener() {
-                    @Override
-                    public void onBandGyroscopeChanged(BandGyroscopeEvent bandGyroscopeEvent) {
-                        final String GyrX = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityX());
-                        final String GyrY = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityY());
-                        final String GyrZ = String.format("%.2f", bandGyroscopeEvent.getAngularVelocityZ());
-                       /* BandGyro.post(new Runnable() {
-                            @Override
-                            public void run() {
-                               // BandGyro.setText("X " + GyrX + ", Y " + GyrY + ", Z " + GyrZ);
-                            }
-                        });*/
-                    }
-                };
-
-                BandUVEventListener uvEventListener = new BandUVEventListener() {
-                    @Override
-                    public void onBandUVChanged(BandUVEvent bandUVEvent) {
-                        final String UVRead = String.valueOf(bandUVEvent.getUVIndexLevel());
-                       /* BandUV.post(new Runnable() {
-                            @Override
-                            public void run() {
-                               // BandUV.setText(UVRead);
-                            }
-                        });*/
-                    }
-                };
-
-                try {
-                    bandClient.getSensorManager().registerUVEventListener(uvEventListener);
-                } catch(BandException ex) {
-                    //catch
-                }
-
-                try {
-                    bandClient.getSensorManager().registerAccelerometerEventListener(accelerometerEventListener, SampleRate.MS128);
-                } catch(BandException ex) {
-                    // catch
-                }
-
-                try {
-                    bandClient.getSensorManager().registerGyroscopeEventListener(gyroscopeEventListener, SampleRate.MS128);
-                } catch(BandException ex) {
-
-                }
-
-                try {
-                    bandClient.getSensorManager().registerHeartRateEventListener(heartRateListener);
-                } catch(BandException ex) {
-                    // catch
-                }
-
-                try {
-                    bandClient.getSensorManager().registerSkinTemperatureEventListener(skinTemperatureEventListener);
-                } catch(BandException ex) {
-                }
-            } else {
-                //BandVersion.setText("Connection failed.. ");
-            }
-        }
-        catch(InterruptedException ex) {
-
-        }
-        catch(BandException ex) {
-
-        }
-    }
-
-
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
         }
     }
 
@@ -318,34 +104,10 @@ public class Profile extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-            // Handle the camera action
-        } else if (id == R.id.nav_world) {
-            Log.v("world","click");
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
     private void handleNewLocation(Location location) {
         Toast.makeText(Profile.this, location.toString(), Toast.LENGTH_SHORT).show();
     }
+
     @Override
     public void onConnected(Bundle bundle) {
         Toast.makeText(Profile.this, "Location services connected.", Toast.LENGTH_SHORT).show();
@@ -367,20 +129,4 @@ public class Profile extends AppCompatActivity
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
-
-    public void actionRescourceClickHandler(MenuItem item){
-
-        Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
-        Log.d("Done","click works");
-            //Fragment frag = new World();
-       /* Intent intentwo = new Intent(getApplicationContext(), World.class);
-        startActivity(intentwo);*/
-
-           /* FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.container, frag);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.addToBackStack(null);
-            ft.commit();*/
-    }
-
 }

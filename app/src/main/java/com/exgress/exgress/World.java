@@ -49,8 +49,8 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
 
     private boolean initMap(){
         if (mMap== null){
-            SupportMapFragment mapFrag = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.nav_world);
-            mMap = mapFrag.getMap();
+           // SupportMapFragment mapFrag = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.nav_world);
+           // mMap = mapFrag.getMap();
         }
         return (mMap!=null);
     }
