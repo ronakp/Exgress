@@ -104,6 +104,16 @@ public class Profile extends AppCompatActivity
 public void worldcheck()
 {
    //code for changing fragment to world
+            Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
+        Log.d("Done","click works");
+            Fragment frag = new World();
+
+
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.container, frag);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.addToBackStack(null);
+            ft.commit();
 }
 
 //
@@ -391,18 +401,18 @@ public void worldcheck()
 
     }
 
-    public void actionRescourceClickHandler(MenuItem item){
-
-        Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
-        Log.d("Done","click works");
-            Fragment frag = new World();
-
-
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.container, frag);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            ft.addToBackStack(null);
-            ft.commit();
-    }
+//    public void actionRescourceClickHandler(MenuItem item){
+//
+//        Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
+//        Log.d("Done","click works");
+//            Fragment frag = new World();
+//
+//
+//            FragmentTransaction ft = getFragmentManager().beginTransaction();
+//            ft.replace(R.id.container, frag);
+//            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+//            ft.addToBackStack(null);
+//            ft.commit();
+//    }
 
 }
