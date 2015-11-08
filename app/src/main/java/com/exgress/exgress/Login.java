@@ -45,10 +45,12 @@ public class Login extends AppCompatActivity {
     }
 
     public void loginpro(View v) {
-        LoginUserModel loginUserModel = new LoginUserModel(
-                username.getText().toString(),
-                password.getText().toString());
-        new GetLoginTask().execute(loginUserModel);
+        Intent intentlog = new Intent(getApplicationContext(), Profile.class);
+        startActivity(intentlog);
+//        LoginUserModel loginUserModel = new LoginUserModel(
+//                username.getText().toString(),
+//                password.getText().toString());
+//        new GetLoginTask().execute(loginUserModel);
     }
 
     public void registerpro(View v) {

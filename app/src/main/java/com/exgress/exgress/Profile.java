@@ -11,8 +11,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -51,7 +54,7 @@ import com.google.android.gms.common.ConnectionResult;
 
 public class Profile extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener/*, DialogInterface.OnClickListener*/ {
+        GoogleApiClient.OnConnectionFailedListener {
 
     BandInfo[] pairedBands;
     BandClient bandClient;
@@ -97,8 +100,12 @@ public class Profile extends AppCompatActivity
         bandConsent(); // new SDK requires consent to read from HR sensor
     }
 
-//     nav_world.setOnClickListener(new View.OnClickListener() {
-//        public void onClick(View v) {
+
+
+//
+//      R.id.nav_world.(new View.OnClickListener() {
+//        @Override
+//        public void onClick(View v){
 //
 //            Fragment frag = new World();
 //
@@ -110,6 +117,7 @@ public class Profile extends AppCompatActivity
 //            ft.commit();
 //        }
 //    });
+
 
     @Override
     protected void onResume() {
@@ -338,6 +346,7 @@ public class Profile extends AppCompatActivity
         if (id == R.id.nav_home) {
             // Handle the camera action
         } else if (id == R.id.nav_world) {
+            Log.v("world","click");
 
         } else if (id == R.id.nav_slideshow) {
 
@@ -376,6 +385,20 @@ public class Profile extends AppCompatActivity
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+    }
+
+    public void actionRescourceClickHandler(MenuItem item){
+
+        Toast.makeText(Profile.this, "Starting Map.", Toast.LENGTH_SHORT).show();
+        Log.d("Done","click works");
+            Fragment frag = new World();
+
+
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.container, frag);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.addToBackStack(null);
+            ft.commit();
     }
 
 }
