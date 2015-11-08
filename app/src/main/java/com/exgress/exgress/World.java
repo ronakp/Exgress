@@ -42,7 +42,7 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
     private MapView mapView;
     private GoogleApiClient mGoogleApiClient;
-    private MapInfoFragment mapInfoFragment
+    private MapInfoFragment mapInfoFragment;
     private Map<String, NodeModel> cachedLocations;
 
     @Override
