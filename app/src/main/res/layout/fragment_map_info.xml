@@ -20,7 +20,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Large Text"
+                android:text="Node Name"
                 android:id="@+id/SpotName"
                 android:layout_row="2"
                 android:layout_column="2" />
@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Large Text"
+                android:text="00.000000 : 00.000000"
                 android:id="@+id/SpotCoordinates"
                 android:layout_row="3"
                 android:layout_column="2" />
@@ -38,7 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Large Text"
+                android:text="Purity"
                 android:id="@+id/SpotFaction"
                 android:layout_row="5"
                 android:layout_column="2" />
@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Large Text"
+                android:text="1000000"
                 android:id="@+id/SpotHealth"
                 android:layout_row="6"
                 android:layout_column="2" />
@@ -56,12 +56,34 @@
     </LinearLayout>
 
     <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:id="@+id/HeartImage"
+        android:background="@drawable/heart"
+        android:layout_alignBottom="@+id/linearLayout"
+        android:layout_toStartOf="@+id/SpotImage" />
+
+    <TextView
+        android:id="@+id/HeartBeatText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/HeartImage"
+        android:layout_alignTop="@+id/HeartImage"
+        android:layout_alignRight="@+id/HeartImage"
+        android:layout_alignBottom="@+id/HeartImage"
+        android:layout_margin="1dp"
+        android:gravity="center"
+        android:text="100"
+        android:textColor="#000000" />
+
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/SpotImage"
         android:background="@drawable/purist"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignBottom="@+id/HeartImage" />
 
     <Button
         android:layout_width="fill_parent"
