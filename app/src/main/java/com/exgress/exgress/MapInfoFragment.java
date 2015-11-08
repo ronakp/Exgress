@@ -57,7 +57,6 @@ import java.util.TimerTask;
 public class MapInfoFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String NODE_NAME = "nodeName";
     private static final String USER_FACTION = "userFaction";
 
     private Button actionButton;
@@ -74,7 +73,7 @@ public class MapInfoFragment extends Fragment {
     private int collectedHp = 0;
     private boolean activityStop = false;
     private NodeModel node;
-    private String nodeName, userFaction;
+    private String userFaction;
 
     /**
      * Use this factory method to create a new instance of
@@ -83,10 +82,9 @@ public class MapInfoFragment extends Fragment {
      * @return A new instance of fragment MapInfoFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MapInfoFragment newInstance(String nodeName, String userFaction) {
+    public static MapInfoFragment newInstance(String userFaction) {
         MapInfoFragment fragment = new MapInfoFragment();
         Bundle args = new Bundle();
-        args.putString(NODE_NAME, nodeName);
         args.putString(USER_FACTION, userFaction);
         fragment.setArguments(args);
         return fragment;
@@ -100,7 +98,6 @@ public class MapInfoFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            nodeName = getArguments().getString(NODE_NAME);
             userFaction = getArguments().getString(USER_FACTION);
         }
         pairedBands = BandClientManager.getInstance().getPairedBands();
@@ -110,7 +107,7 @@ public class MapInfoFragment extends Fragment {
         heartTimer = new Timer();
         submitTimer = new Timer();
 
-        new FetchNodeInfoActivity().execute(nodeName); //might have to be moved somewhere else
+//        new FetchNodeInfoActivity().execute(nodeName); //might have to be moved somewhere else
     }
 
     @Override
@@ -155,21 +152,17 @@ public class MapInfoFragment extends Fragment {
         super.onDetach();
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface MapInfoInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
-
-        public void onSpotSelect(NodeModel model);
+    public void updateSelectedLocation(NodeModel model) {
+        node = model;
+        name.setText(model.name);
+        location.setText(model.latitude + " : " + model.longitude);
+        faction.setText(model.faction);
+        hp.setText(model.hp);
+        if (model.faction.equals(Constants.BlueFaction)){
+            factionIcon.setBackgroundResource(R.drawable.purist);
+        } else {
+            factionIcon.setBackgroundResource(R.drawable.supremacy);
+        }
     }
 
     private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
@@ -303,56 +296,6 @@ public class MapInfoFragment extends Fragment {
         }
     }
 
-    private class FetchNodeInfoActivity extends AsyncTask<String, Void, NodeModel> {
-        @Override
-        protected NodeModel doInBackground(String... params) {
-            return null;
-        }
-    }
-
-    private class FetchNodeInformation extends AsyncTask<String, Void, NodeModel> {
-
-        @Override
-        protected NodeModel doInBackground(String... params) {
-            try {
-                URL url = new URL("http://exgress.azurewebsites.net/api/Node/SingleNode?name=" + nodeName);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-                //Read
-                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
-
-                String line = null;
-                StringBuilder sb = new StringBuilder();
-
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-                br.close();
-                String resultr = sb.toString();
-                JSONObject jResultl = new JSONObject(resultr);
-                NodeModel model = new NodeModel(jResultl.getString("Name"), (float) jResultl.getDouble("Latitude"), (float) jResultl.getDouble("Longitude"), jResultl.getString("Faction"), jResultl.getInt("HP"));
-                return model;
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(NodeModel result) {
-            name.setText(result.name);
-            location.setText(result.latitude + " : " + result.longitude);
-            faction.setText(result.faction);
-            hp.setText(result.hp);
-            if (result.faction.equals(Constants.BlueFaction)){
-                factionIcon.setBackgroundResource(R.drawable.purist);
-            } else {
-                factionIcon.setBackgroundResource(R.drawable.supremacy);
-            }
-        }
-    }
-
     private class ActionActivities extends AsyncTask<NodeModel, String, Void> {
 
         @Override
@@ -390,7 +333,7 @@ public class MapInfoFragment extends Fragment {
                         //Read
                         BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
 
-                        String line = null;
+                        String line;
                         StringBuilder sb = new StringBuilder();
 
                         while ((line = br.readLine()) != null) {
