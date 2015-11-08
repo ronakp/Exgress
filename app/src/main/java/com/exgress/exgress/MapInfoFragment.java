@@ -62,7 +62,7 @@ public class MapInfoFragment extends Fragment {
 
     private Button actionButton;
 
-    private TextView faction, hp;
+    private TextView name, location, faction, hp;
     private ImageView factionIcon;
 
     BandInfo[] pairedBands;
@@ -109,6 +109,8 @@ public class MapInfoFragment extends Fragment {
         //set up the heartTimer
         heartTimer = new Timer();
         submitTimer = new Timer();
+
+        new FetchNodeInfoActivity().execute(nodeName); //might have to be moved somewhere else
     }
 
     @Override
@@ -130,6 +132,7 @@ public class MapInfoFragment extends Fragment {
                             sampleHeartRate = true;
                         }
                     }, 1000, 1000);
+                    new ActionActivities().execute(node);
                     activityStop = false;
                 } else {
                     actionButton.setText("Click To Energize");
@@ -138,6 +141,8 @@ public class MapInfoFragment extends Fragment {
             }
         });
 
+        name = (TextView)view.findViewById(R.id.SpotName);
+        location = (TextView)view.findViewById(R.id.SpotCoordinates);
         faction = (TextView)view.findViewById(R.id.SpotFaction);
         hp = (TextView)view.findViewById(R.id.SpotHealth);
         factionIcon = (ImageView)view.findViewById(R.id.SpotImage);
@@ -302,6 +307,49 @@ public class MapInfoFragment extends Fragment {
         @Override
         protected NodeModel doInBackground(String... params) {
             return null;
+        }
+    }
+
+    private class FetchNodeInformation extends AsyncTask<String, Void, NodeModel> {
+
+        @Override
+        protected NodeModel doInBackground(String... params) {
+            try {
+                URL url = new URL("http://exgress.azurewebsites.net/api/Node/SingleNode?name=" + nodeName);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+                //Read
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
+
+                String line = null;
+                StringBuilder sb = new StringBuilder();
+
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                String resultr = sb.toString();
+                JSONObject jResultl = new JSONObject(resultr);
+                NodeModel model = new NodeModel(jResultl.getString("Name"), (float) jResultl.getDouble("Latitude"), (float) jResultl.getDouble("Longitude"), jResultl.getString("Faction"), jResultl.getInt("HP"));
+                return model;
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(NodeModel result) {
+            name.setText(result.name);
+            location.setText(result.latitude + " : " + result.longitude);
+            faction.setText(result.faction);
+            hp.setText(result.hp);
+            if (result.faction.equals(Constants.BlueFaction)){
+                factionIcon.setBackgroundResource(R.drawable.purist);
+            } else {
+                factionIcon.setBackgroundResource(R.drawable.supremacy);
+            }
         }
     }
 
