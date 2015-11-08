@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.app.Fragment;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -71,10 +72,14 @@ public class World extends FragmentActivity implements OnMapReadyCallback, Googl
         if (userFaction.equals(Constants.BlueFaction)) {
             LinearLayout view = (LinearLayout) findViewById(R.id.world);
             view.setBackgroundResource(R.drawable.purist_background);
+            ImageView image = (ImageView) findViewById(R.id.SpotImage);
+            image.setBackgroundResource(R.drawable.purist);
         }
         else {
             LinearLayout view = (LinearLayout) findViewById(R.id.world);
             view.setBackgroundResource(R.drawable.supremacy_background);
+            ImageView image = (ImageView) findViewById(R.id.SpotImage);
+            image.setBackgroundResource(R.drawable.supremacy);
         }
 
         mapInfoFragment.setUserFaction(userFaction);
@@ -159,7 +164,7 @@ public class World extends FragmentActivity implements OnMapReadyCallback, Googl
 
             try {
                 URL url = new URL("http://exgress.azurewebsites.net/api/Node?latitude=" + 41.319076
-                        + "&longitude=" + -72.515259);
+                        + "&longitude=" + -72.915259);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();

@@ -32,6 +32,7 @@ import com.microsoft.band.sensors.BandSkinTemperatureEventListener;
 import com.microsoft.band.sensors.BandUVEvent;
 import com.microsoft.band.sensors.BandUVEventListener;
 import com.microsoft.band.sensors.HeartRateConsentListener;
+import com.microsoft.band.sensors.MotionType;
 import com.microsoft.band.sensors.SampleRate;
 
 import org.json.JSONObject;
@@ -52,7 +53,7 @@ public class MapInfoFragment extends Fragment {
 
     private Button actionButton;
 
-    private TextView name, location, faction, hp, heartBeat;
+    private TextView name, location, faction, hp, heartBeat, caloriesBurned, multiplier;
     private ImageView factionIcon, heartBeatIcon;
 
     BandInfo[] pairedBands;
@@ -63,9 +64,13 @@ public class MapInfoFragment extends Fragment {
     private Timer submitTimer;
     private int collectedHp = 0;
     private boolean activityStop = false;
+    private boolean firstTimeCalorieCount = true;
+    private int baseCalories;
     private NodeModel node;
     private String userFaction;
 
+    private double multiplierSpeed = 0;
+    private double multiplierAccel = 0;
 
     public MapInfoFragment() {
         // Required empty public constructor
@@ -84,8 +89,6 @@ public class MapInfoFragment extends Fragment {
         //set up the heartTimer
         heartTimer = new Timer();
         submitTimer = new Timer();
-
-//        new FetchNodeInfoActivity().execute(nodeName); //might have to be moved somewhere else
     }
 
     @Override
@@ -121,6 +124,8 @@ public class MapInfoFragment extends Fragment {
         faction = (TextView)view.findViewById(R.id.SpotFaction);
         hp = (TextView)view.findViewById(R.id.SpotHealth);
         heartBeat = (TextView)view.findViewById(R.id.HeartBeatText);
+        caloriesBurned = (TextView)view.findViewById(R.id.CaloriesBurned);
+        multiplier = (TextView)view.findViewById(R.id.Multipliers);
         heartBeatIcon = (ImageView)view.findViewById(R.id.HeartImage);
         factionIcon = (ImageView)view.findViewById(R.id.SpotImage);
 
@@ -143,7 +148,7 @@ public class MapInfoFragment extends Fragment {
         location.setVisibility(View.VISIBLE);
         faction.setText(model.faction);
         faction.setVisibility(View.VISIBLE);
-        hp.setText(model.hp + "");
+        hp.setText(model.hp + "HP");
         hp.setVisibility(View.VISIBLE);
         if (model.faction.equals(Constants.BlueFaction)){
             factionIcon.setBackgroundResource(R.drawable.purist);
@@ -152,6 +157,8 @@ public class MapInfoFragment extends Fragment {
         }
         heartBeat.setVisibility(View.VISIBLE);
         heartBeatIcon.setVisibility(View.VISIBLE);
+        caloriesBurned.setVisibility(View.VISIBLE);
+        multiplier.setVisibility(View.VISIBLE);
     }
 
     private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
@@ -211,7 +218,7 @@ public class MapInfoFragment extends Fragment {
                                 calculatedHp = 0;
                             }
                             calculatedHp = (int)(calculatedHp * (calculatedHp / 2));
-                            collectedHp += calculatedHp;
+                            collectedHp += calculatedHp * (1 + multiplierAccel + multiplierSpeed);
                             sampleHeartRate = false;
                         }
 
@@ -219,6 +226,7 @@ public class MapInfoFragment extends Fragment {
                             @Override
                             public void run() {
                                 heartBeat.setText(bandHeartRateEvent.getHeartRate() + "");
+
                             }
                         });
                     }
@@ -231,13 +239,30 @@ public class MapInfoFragment extends Fragment {
                         final String motionType = String.valueOf(bandDistanceEvent.getMotionType());
                         final String speed = String.valueOf(bandDistanceEvent.getSpeed());
                         final String pace = String.valueOf(bandDistanceEvent.getPace());
+                        if (bandDistanceEvent.getMotionType() == MotionType.JOGGING) {
+                            multiplierSpeed = 0.2;
+                        } else if (bandDistanceEvent.getMotionType() == MotionType.RUNNING) {
+                            multiplierSpeed = 0.5;
+                        } else {
+                            multiplierSpeed = 0;
+                        }
                     }
                 };
 
                 BandCaloriesEventListener caloriesEventListener = new BandCaloriesEventListener() {
                     @Override
-                    public void onBandCaloriesChanged(BandCaloriesEvent bandCaloriesEvent) {
-                        final String caloriesBurned = String.valueOf(bandCaloriesEvent.getCalories());
+                    public void onBandCaloriesChanged(final BandCaloriesEvent bandCaloriesEvent) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (firstTimeCalorieCount) {
+                                    baseCalories = (int)bandCaloriesEvent.getCalories();
+                                    firstTimeCalorieCount = false;
+                                }
+                                caloriesBurned.setText("Calories burned: " + (bandCaloriesEvent.getCalories() - baseCalories));
+                                multiplier.setText(String.format("Multiplier: %.2fx", (1+multiplierAccel+multiplierSpeed)));
+                            }
+                        });
                     }
                 };
 
@@ -254,6 +279,18 @@ public class MapInfoFragment extends Fragment {
                         final String AccX = String.format("%.2f", bandAccelerometerEvent.getAccelerationX());
                         final String AccY = String.format("%.2f", bandAccelerometerEvent.getAccelerationY());
                         final String AccZ = String.format("%.2f", bandAccelerometerEvent.getAccelerationZ());
+                        double pyAccel = Math.sqrt(Math.pow(bandAccelerometerEvent.getAccelerationX(), 2) +
+                                Math.pow(bandAccelerometerEvent.getAccelerationY(), 2) +
+                                Math.pow(bandAccelerometerEvent.getAccelerationZ(), 2));
+
+                        pyAccel-= 3;
+                        if (pyAccel < 0) {
+                            pyAccel = 0;
+                        }
+                        multiplierAccel = pyAccel/10;
+                        if (multiplierAccel > 1) {
+                            multiplierAccel = 1;
+                        }
                     }
                 };
 
@@ -382,7 +419,7 @@ public class MapInfoFragment extends Fragment {
         @Override
         protected void onProgressUpdate(String... updateText) {
             collectedHp = 0;
-            hp.setText(updateText[0]);
+            hp.setText(updateText[0] + "HP");
             faction.setText(updateText[1]);
             if (updateText[1].equals(Constants.BlueFaction)) {
                 factionIcon.setBackgroundResource(R.drawable.purist);

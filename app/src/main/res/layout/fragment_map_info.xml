@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.exgress.exgress.MapInfoFragment">
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="fill_parent"
+    android:layout_height="match_parent" tools:context="com.exgress.exgress.MapInfoFragment"
+    android:gravity="center_horizontal">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -107,5 +108,27 @@
         android:layout_alignParentStart="true"
         android:background="@color/black"
         android:textColor="@color/pureWhite"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Calories Burned: 0"
+        android:id="@+id/CaloriesBurned"
+        android:layout_below="@+id/ActionButton"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/pureWhite"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Multiplier: 1x"
+        android:id="@+id/Multipliers"
+        android:layout_below="@+id/CaloriesBurned"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/pureWhite"
+        android:visibility="invisible"/>
 
 </RelativeLayout>
