@@ -57,12 +57,11 @@ import java.util.TimerTask;
 public class MapInfoFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String USER_FACTION = "userFaction";
 
     private Button actionButton;
 
     private TextView name, location, faction, hp, heartBeat;
-    private ImageView factionIcon;
+    private ImageView factionIcon, heartBeatIcon;
 
     BandInfo[] pairedBands;
     BandClient bandClient;
@@ -75,31 +74,18 @@ public class MapInfoFragment extends Fragment {
     private NodeModel node;
     private String userFaction;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment MapInfoFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static MapInfoFragment newInstance(String userFaction) {
-        MapInfoFragment fragment = new MapInfoFragment();
-        Bundle args = new Bundle();
-        args.putString(USER_FACTION, userFaction);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     public MapInfoFragment() {
         // Required empty public constructor
     }
 
+    public void setUserFaction(String faction) {
+        this.userFaction = faction;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            userFaction = getArguments().getString(USER_FACTION);
-        }
         pairedBands = BandClientManager.getInstance().getPairedBands();
         bandClient = BandClientManager.getInstance().create(getActivity(), pairedBands[0]);
 
@@ -143,7 +129,10 @@ public class MapInfoFragment extends Fragment {
         faction = (TextView)view.findViewById(R.id.SpotFaction);
         hp = (TextView)view.findViewById(R.id.SpotHealth);
         heartBeat = (TextView)view.findViewById(R.id.HeartBeatText);
+        heartBeatIcon = (ImageView)view.findViewById(R.id.HeartImage);
         factionIcon = (ImageView)view.findViewById(R.id.SpotImage);
+
+        //might as well set the faction icon to the user's image
 
         return view;
     }
