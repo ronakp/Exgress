@@ -21,6 +21,10 @@ import com.microsoft.band.BandInfo;
 import com.microsoft.band.BandPendingResult;
 import com.microsoft.band.ConnectionState;
 import com.microsoft.band.UserConsent;
+import com.microsoft.band.sensors.BandCaloriesEvent;
+import com.microsoft.band.sensors.BandCaloriesEventListener;
+import com.microsoft.band.sensors.BandDistanceEvent;
+import com.microsoft.band.sensors.BandDistanceEventListener;
 import com.microsoft.band.sensors.BandAccelerometerEvent;
 import com.microsoft.band.sensors.BandAccelerometerEventListener;
 import com.microsoft.band.sensors.BandGyroscopeEvent;
@@ -219,6 +223,22 @@ public class MapInfoFragment extends Fragment {
                     }
                 };
 
+                BandDistanceEventListener distanceEventListener = new BandDistanceEventListener() {
+                    @Override
+                    public void onBandDistanceChanged(BandDistanceEvent bandDistanceEvent) {
+                        final String distance = String.valueOf(bandDistanceEvent.getTotalDistance());
+                        final String motionType = String.valueOf(bandDistanceEvent.getMotionType());
+                        final String speed = String.valueOf(bandDistanceEvent.getSpeed());
+                        final String pace = String.valueOf(bandDistanceEvent.getPace());
+                    }
+                };
+
+                BandCaloriesEventListener caloriesEventListener = new BandCaloriesEventListener() {
+                    @Override
+                    public void onBandCaloriesChanged(BandCaloriesEvent bandCaloriesEvent) {
+                        final String caloriesBurned = String.valueOf(bandCaloriesEvent.getCalories());
+                    }
+                };
 
                 BandSkinTemperatureEventListener skinTemperatureEventListener = new BandSkinTemperatureEventListener() {
                     @Override
@@ -252,6 +272,16 @@ public class MapInfoFragment extends Fragment {
                     }
                 };
 
+                try{
+                    bandClient.getSensorManager().registerDistanceEventListener(distanceEventListener);
+                }catch(BandException ex) {
+                    //catch
+                }
+                try{
+                    bandClient.getSensorManager().registerCaloriesEventListener(caloriesEventListener);
+                }catch(BandException ex) {
+                    //catch
+                }
                 try {
                     bandClient.getSensorManager().registerUVEventListener(uvEventListener);
                 } catch(BandException ex) {
