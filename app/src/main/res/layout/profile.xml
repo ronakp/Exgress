@@ -14,4 +14,10 @@
         android:layout_gravity="start" android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_profile" app:menu="@menu/profile_drawer" />
 
+    <FrameLayout android:name="fragments.YourInitialFragment"
+        android:id="@+id/container"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dip" />
+
 </android.support.v4.widget.DrawerLayout>

@@ -1,5 +1,8 @@
 package com.exgress.exgress;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -23,6 +26,8 @@ import com.microsoft.band.ConnectionState;
 import com.microsoft.band.sensors.BandHeartRateEvent;
 import com.microsoft.band.sensors.BandHeartRateEventListener;
 import com.microsoft.band.sensors.HeartRateConsentListener;
+
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +51,7 @@ import com.google.android.gms.common.ConnectionResult;
 
 public class Profile extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener  {
+        GoogleApiClient.OnConnectionFailedListener/*, DialogInterface.OnClickListener*/ {
 
     BandInfo[] pairedBands;
     BandClient bandClient;
@@ -91,6 +96,20 @@ public class Profile extends AppCompatActivity
         // will be thrown if called from the UI thread.
         bandConsent(); // new SDK requires consent to read from HR sensor
     }
+
+//     nav_world.setOnClickListener(new View.OnClickListener() {
+//        public void onClick(View v) {
+//
+//            Fragment frag = new World();
+//
+//
+//            FragmentTransaction ft = getFragmentManager().beginTransaction();
+//            ft.replace(R.id.container, frag);
+//            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+//            ft.addToBackStack(null);
+//            ft.commit();
+//        }
+//    });
 
     @Override
     protected void onResume() {
@@ -358,4 +377,5 @@ public class Profile extends AppCompatActivity
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
+
 }
