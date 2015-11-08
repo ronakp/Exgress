@@ -80,7 +80,6 @@ public class MapInfoFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
      * @return A new instance of fragment MapInfoFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -122,14 +121,20 @@ public class MapInfoFragment extends Fragment {
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                actionButton.setText("Get Ready!");
-                bandConsent();
-                heartTimer.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        sampleHeartRate = true;
-                    }
-                }, 1000, 1000);
+                if (activityStop) {
+                    actionButton.setText("Click To Finish");
+                    bandConsent();
+                    heartTimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            sampleHeartRate = true;
+                        }
+                    }, 1000, 1000);
+                    activityStop = false;
+                } else {
+                    actionButton.setText("Click To Energize");
+                    activityStop = true;
+                }
             }
         });
 
@@ -213,7 +218,7 @@ public class MapInfoFragment extends Fragment {
 
                 BandHeartRateEventListener heartRateListener = new BandHeartRateEventListener() {
                     public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
-                        if (sampleHeartRate) {
+                        if (sampleHeartRate && !activityStop) {
                             collectedHp += bandHeartRateEvent.getHeartRate();
                             sampleHeartRate = false;
                         }
@@ -303,57 +308,65 @@ public class MapInfoFragment extends Fragment {
     private class ActionActivities extends AsyncTask<NodeModel, String, Void> {
 
         @Override
-        protected Void doInBackground(NodeModel... params) {
+        protected Void doInBackground(final NodeModel... params) {
             //here, we can connect to the server and send updates... yeah this might be a bit fun
             //we are sending updates once every 10 seconds
 
             //I am going to hate myself for writing tihs
-            try {
+            submitTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        if (activityStop) {
+                            submitTimer.cancel();
+                            submitTimer.purge();
+                        }
+                        String action = userFaction.equals(params[0].faction) ? Constants.ReinforceSubmission : Constants.DrainSubmission;
 
-                String action = userFaction.equals(params[0].faction) ? Constants.ReinforceSubmission : Constants.DrainSubmission;
+                        URL url = new URL("http://exgress.azurewebsites.net/api/Node/Update");
+                        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                        urlConnection.setRequestMethod("POST");
+                        urlConnection.setRequestProperty("Content-Type","application/JSON");
+                        urlConnection.connect();
+                        //Write
+                        OutputStream os = urlConnection.getOutputStream();
+                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                        writer.write("{\n" +
+                                "  \"Name\": \"" + params[0].name + "\",\n" +
+                                "  \"Faction\": \"" + params[0].faction + "\",\n" +
+                                "  \"Action\": \"" + action + "\"\n" +
+                                "  \"HP\": \"" + collectedHp + "\"\n" +
+                                "}");
+                        writer.close();
+                        os.close();
+                        //Read
+                        BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
 
-                URL url = new URL("http://exgress.azurewebsites.net/api/Node/Update");
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setRequestProperty("Content-Type","application/JSON");
-                urlConnection.connect();
-                //Write
-                OutputStream os = urlConnection.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                writer.write("{\n" +
-                        "  \"Name\": \"" + params[0].name + "\",\n" +
-                        "  \"Faction\": \"" + params[0].faction + "\",\n" +
-                        "  \"Action\": \"" + action + "\"\n" +
-                        "  \"HP\": \"" + collectedHp + "\"\n" +
-                        "}");
-                writer.close();
-                os.close();
-                //Read
-                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
+                        String line = null;
+                        StringBuilder sb = new StringBuilder();
 
-                String line = null;
-                StringBuilder sb = new StringBuilder();
-
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line);
+                        }
+                        br.close();
+                        String resultr = sb.toString();
+                        JSONObject jResultl = new JSONObject(resultr);
+                        node.faction = jResultl.getString(Constants.FactionColumn);
+                        node.hp = jResultl.getInt(Constants.HPColumn);
+                        publishProgress(node.hp + "", node.faction);
+                    } catch (Exception e ) {
+                        System.out.println(e.getMessage());
+                    }
                 }
-                br.close();
-                String resultr = sb.toString();
-                JSONObject jResultl = new JSONObject(resultr);
-                String ree = jResultl.getString("Response");
-                Log.d("Hello", resultr);
-                if(ree.equals("success")) {
-                    
-                }
-            } catch (Exception e ) {
-                System.out.println(e.getMessage());
-            }
+            }, 10000, 10000);
+
 
             return null;
         }
 
         @Override
         protected void onProgressUpdate(String... updateText) {
+            collectedHp = 0;
             hp.setText(updateText[0]);
             faction.setText(updateText[1]);
             if (updateText[1].equals(Constants.BlueFaction)) {
