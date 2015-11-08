@@ -25,6 +25,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -163,8 +164,14 @@ public class World extends FragmentActivity implements OnMapReadyCallback, Googl
         protected List<NodeModel> doInBackground(Location... params) {
 
             try {
-                URL url = new URL("http://exgress.azurewebsites.net/api/Node?latitude=" + 41.319076
-                        + "&longitude=" + -72.915259);
+                URL url;
+                if (params[0] == null) {
+                    url = new URL("http://exgress.azurewebsites.net/api/Node?latitude=" + 41.319076
+                            + "&longitude=" + -72.915259);
+                } else {
+                    url = new URL("http://exgress.azurewebsites.net/api/Node?latitude=" + params[0].getLatitude()
+                            + "&longitude=" + params[0].getLongitude());
+                }
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
@@ -206,7 +213,11 @@ public class World extends FragmentActivity implements OnMapReadyCallback, Googl
         protected void onPostExecute(List<NodeModel> nodeModels) {
             for (NodeModel nodeModel : nodeModels) {
                 LatLng location = new LatLng(nodeModel.latitude, nodeModel.longitude);
-                mMap.addMarker(new MarkerOptions().position(location).title(nodeModel.name));
+                if (nodeModel.faction.equals(Constants.BlueFaction)) {
+                    mMap.addMarker(new MarkerOptions().position(location).title(nodeModel.name).icon(BitmapDescriptorFactory.fromResource(R.drawable.purist_small)));
+                } else {
+                    mMap.addMarker(new MarkerOptions().position(location).title(nodeModel.name).icon(BitmapDescriptorFactory.fromResource(R.drawable.supremacy_small)));
+                }
                 String key = (nodeModel.latitude + "").substring(0, 7);
                 cachedLocations.put(key, nodeModel);
             }

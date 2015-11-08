@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -93,11 +94,22 @@ public class Register extends AppCompatActivity {
                 }
                 br.close();
                 String resultr = sb.toString();
-                JSONObject jResultl = new JSONObject(resultr);
+                final JSONObject jResultl = new JSONObject(resultr);
                 String ree = jResultl.getString("Response");
                 if(ree.equals("success")) {
                     Intent intentlog = new Intent(getApplicationContext(), Login.class);
                     startActivity(intentlog);
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Toast.makeText(Register.this, jResultl.getString("Response"), Toast.LENGTH_LONG).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
             } catch (Exception e ) {
                 System.out.println(e.getMessage());

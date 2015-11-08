@@ -1,5 +1,6 @@
 package com.exgress.exgress;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -94,12 +96,23 @@ public class Login extends AppCompatActivity {
                 br.close();
                 String result = sb.toString();
 
-                JSONObject jResult = new JSONObject(result);
+                final JSONObject jResult = new JSONObject(result);
                 String re = jResult.getString("Response");
                 if(re.equals("success")) {
                     Intent intentlog = new Intent(getApplicationContext(), World.class);
                     intentlog.putExtra("faction", jResult.getString(Constants.FactionColumn));
                     startActivity(intentlog);
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Toast.makeText(Login.this, jResult.getString("Response"), Toast.LENGTH_LONG).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
             } catch (Exception e ) {
                 System.out.println(e.getMessage());

@@ -141,6 +141,7 @@ public class MapInfoFragment extends Fragment {
 
     public void updateSelectedLocation(NodeModel model) {
         activityStop = true;
+        actionButton.setVisibility(View.VISIBLE);
         node = model;
         name.setText(model.name);
         name.setVisibility(View.VISIBLE);
@@ -410,7 +411,7 @@ public class MapInfoFragment extends Fragment {
                         System.out.println(e.getMessage());
                     }
                 }
-            }, 10000, 10000);
+            }, 10000, 15000);
 
 
             return null;
