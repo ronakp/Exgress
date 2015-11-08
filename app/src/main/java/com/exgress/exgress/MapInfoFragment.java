@@ -1,12 +1,8 @@
 package com.exgress.exgress;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
+import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +17,12 @@ import com.microsoft.band.BandInfo;
 import com.microsoft.band.BandPendingResult;
 import com.microsoft.band.ConnectionState;
 import com.microsoft.band.UserConsent;
+import com.microsoft.band.sensors.BandAccelerometerEvent;
+import com.microsoft.band.sensors.BandAccelerometerEventListener;
 import com.microsoft.band.sensors.BandCaloriesEvent;
 import com.microsoft.band.sensors.BandCaloriesEventListener;
 import com.microsoft.band.sensors.BandDistanceEvent;
 import com.microsoft.band.sensors.BandDistanceEventListener;
-import com.microsoft.band.sensors.BandAccelerometerEvent;
-import com.microsoft.band.sensors.BandAccelerometerEventListener;
 import com.microsoft.band.sensors.BandGyroscopeEvent;
 import com.microsoft.band.sensors.BandGyroscopeEventListener;
 import com.microsoft.band.sensors.BandHeartRateEvent;
@@ -50,14 +46,6 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * to handle interaction events.
- * Use the {@link MapInfoFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class MapInfoFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -155,13 +143,15 @@ public class MapInfoFragment extends Fragment {
         location.setVisibility(View.VISIBLE);
         faction.setText(model.faction);
         faction.setVisibility(View.VISIBLE);
-        hp.setText(model.hp);
+        hp.setText(model.hp + "");
         hp.setVisibility(View.VISIBLE);
         if (model.faction.equals(Constants.BlueFaction)){
             factionIcon.setBackgroundResource(R.drawable.purist);
         } else {
             factionIcon.setBackgroundResource(R.drawable.supremacy);
         }
+        heartBeat.setVisibility(View.VISIBLE);
+        heartBeatIcon.setVisibility(View.VISIBLE);
     }
 
     private HeartRateConsentListener mHeartRateConsentListener = new HeartRateConsentListener() {
@@ -214,12 +204,23 @@ public class MapInfoFragment extends Fragment {
                 }
 
                 BandHeartRateEventListener heartRateListener = new BandHeartRateEventListener() {
-                    public void onBandHeartRateChanged(BandHeartRateEvent bandHeartRateEvent) {
+                    public void onBandHeartRateChanged(final BandHeartRateEvent bandHeartRateEvent) {
                         if (sampleHeartRate && !activityStop) {
-                            collectedHp += bandHeartRateEvent.getHeartRate();
+                            int calculatedHp = bandHeartRateEvent.getHeartRate() - 70;
+                            if (calculatedHp < 0){
+                                calculatedHp = 0;
+                            }
+                            calculatedHp = (int)(calculatedHp * (calculatedHp / 2));
+                            collectedHp += calculatedHp;
                             sampleHeartRate = false;
                         }
-                        heartBeat.setText(bandHeartRateEvent.getHeartRate());
+
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                heartBeat.setText(bandHeartRateEvent.getHeartRate() + "");
+                            }
+                        });
                     }
                 };
 
@@ -348,7 +349,7 @@ public class MapInfoFragment extends Fragment {
                         writer.write("{\n" +
                                 "  \"Name\": \"" + params[0].name + "\",\n" +
                                 "  \"Faction\": \"" + params[0].faction + "\",\n" +
-                                "  \"Action\": \"" + action + "\"\n" +
+                                "  \"Action\": \"" + action + "\",\n" +
                                 "  \"HP\": \"" + collectedHp + "\"\n" +
                                 "}");
                         writer.close();

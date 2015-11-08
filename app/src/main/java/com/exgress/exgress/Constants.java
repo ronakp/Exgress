@@ -9,24 +9,24 @@ public class Constants {
     public static final String BlueFaction = "Purist";
 
     //table names
-    public static final String UserTableName = "user";
-    public static final String NodeTableName = "node";
-    public static final String StatusTableName = "status";
+    public static final String UserTableName = "User";
+    public static final String NodeTableName = "Node";
+    public static final String StatusTableName = "Status";
 
     //table columns
-    public static final String UsernameColumn = "username";
-    public static final String PasswordColumn = "password";
-    public static final String SaltColumn = "salt";
-    public static final String FactionColumn = "faction";
-    public static final String EmailColumn = "email";
+    public static final String UsernameColumn = "Username";
+    public static final String PasswordColumn = "Password";
+    public static final String SaltColumn = "Salt";
+    public static final String FactionColumn = "Faction";
+    public static final String EmailColumn = "Email";
 
-    public static final String StatusColumn = "status";
-    public static final String ValueColumn = "value";
+    public static final String StatusColumn = "Status";
+    public static final String ValueColumn = "Value";
 
-    public static final String LatitudeColumn = "latitude";
-    public static final String LongitudeColumn = "longitude";
+    public static final String LatitudeColumn = "Latitude";
+    public static final String LongitudeColumn = "Longitude";
     public static final String HPColumn = "HP";
-    public static final String NameColumn = "name";
+    public static final String NameColumn = "Name";
 
     //status keys
     public static final String RedCount = "red_faction_count";

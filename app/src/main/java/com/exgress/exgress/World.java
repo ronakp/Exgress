@@ -1,5 +1,6 @@
 package com.exgress.exgress;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
@@ -9,9 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.app.Fragment;
+import android.widget.LinearLayout;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -21,6 +25,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
@@ -37,13 +42,17 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class World extends FragmentActivity implements OnMapReadyCallback {
+public class World extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap mMap;
     private MapView mapView;
     private GoogleApiClient mGoogleApiClient;
     private MapInfoFragment mapInfoFragment;
     private Map<String, NodeModel> cachedLocations;
+    private String userFaction;
+
+    private Timer refreshTimer;
+    private boolean attemptingRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +63,21 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
                 .findFragmentById(R.id.map);
         mapInfoFragment = (MapInfoFragment) getFragmentManager().findFragmentById(R.id.ExgressMapInfoFragment);
         mapFragment.getMapAsync(this);
+
+        Intent intent = getIntent();
+
+        userFaction = intent.getExtras().getString("faction");
+
+        if (userFaction.equals(Constants.BlueFaction)) {
+            LinearLayout view = (LinearLayout) findViewById(R.id.world);
+            view.setBackgroundResource(R.drawable.purist_background);
+        }
+        else {
+            LinearLayout view = (LinearLayout) findViewById(R.id.world);
+            view.setBackgroundResource(R.drawable.supremacy_background);
+        }
+
+        mapInfoFragment.setUserFaction(userFaction);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -82,18 +106,14 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                new FetchNearByNodes().execute();
-            }
-        }, 1000, 20000);
 
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
-            public void onMapClick(LatLng latLng) {
-                String key = latLng.latitude + ":" + latLng.longitude;
+            public boolean onMarkerClick(Marker marker) {
+                LatLng location = marker.getPosition();
+                String key = (location.latitude + "").substring(0, 7);
                 mapInfoFragment.updateSelectedLocation(cachedLocations.get(key));
+                return true;
             }
         });
     }
@@ -106,15 +126,40 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
         return (mMap!=null);
     }
 
-    protected class FetchNearByNodes extends AsyncTask<Void, Void, List<NodeModel>> {
+    @Override
+    public void onConnected(Bundle bundle) {
+        refreshTimer = new Timer();
+        refreshTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (!attemptingRequest) {
+                    Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                    new FetchNearByNodes().execute(location);
+                    attemptingRequest = true;
+                }
+            }
+        }, 1000, 20000);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        refreshTimer.cancel();
+        refreshTimer.purge();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    protected class FetchNearByNodes extends AsyncTask<Location, Void, List<NodeModel>> {
 
         @Override
-        protected List<NodeModel> doInBackground(Void... params) {
-            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        protected List<NodeModel> doInBackground(Location... params) {
 
             try {
-                URL url = new URL("http://exgress.azurewebsites.net/api/Node?latitude=" + location.getLatitude()
-                        + "&longitude" + location.getLongitude());
+                URL url = new URL("http://exgress.azurewebsites.net/api/Node?latitude=" + 41.319076
+                        + "&longitude=" + -72.515259);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
@@ -145,7 +190,10 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
                 return toReturn;
             }
             catch (Exception e) {
-                return null;
+                return new ArrayList<>();
+            }
+            finally {
+                attemptingRequest = false;
             }
         }
 
@@ -154,7 +202,7 @@ public class World extends FragmentActivity implements OnMapReadyCallback {
             for (NodeModel nodeModel : nodeModels) {
                 LatLng location = new LatLng(nodeModel.latitude, nodeModel.longitude);
                 mMap.addMarker(new MarkerOptions().position(location).title(nodeModel.name));
-                String key = nodeModel.latitude + ":" + nodeModel.longitude;
+                String key = (nodeModel.latitude + "").substring(0, 7);
                 cachedLocations.put(key, nodeModel);
             }
         }

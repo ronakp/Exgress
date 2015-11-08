@@ -98,6 +98,7 @@ public class Login extends AppCompatActivity {
                 String re = jResult.getString("Response");
                 if(re.equals("success")) {
                     Intent intentlog = new Intent(getApplicationContext(), World.class);
+                    intentlog.putExtra("faction", jResult.getString(Constants.FactionColumn));
                     startActivity(intentlog);
                 }
             } catch (Exception e ) {
